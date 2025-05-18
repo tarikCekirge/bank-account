@@ -25,20 +25,22 @@ const customerReducer = (state = initialStateCustomer, action) => {
 };
 
 // Action creators
-export const deposit = (amount) => {
-  return { type: "account/deposit", payload: amount };
-};
-export const withdraw = (withdraw) => {
-  return { type: "account/withdraw", payload: withdraw };
-};
-export const requestLoan = (amount, purpose) => {
+export const createCustomer = (fullName, nationalID) => {
   return {
-    type: "account/requestLoan",
-    payload: { amount: amount, purpose: purpose },
+    type: "customer/createCustomer",
+    payload: {
+      fullName,
+      nationalID,
+      createdAt: new Date().toISOString(),
+    },
   };
 };
-export const payLoan = () => {
-  return { type: "account/payLoan" };
+
+export const updateName = (fullName) => {
+  return {
+    type: "customer/updateName",
+    payload: fullName,
+  };
 };
 
 export default customerReducer;

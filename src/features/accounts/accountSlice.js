@@ -2,6 +2,7 @@ const initialStateAccount = {
   balance: 0,
   loan: 0,
   loanPurpose: "",
+  isLoading: false,
 };
 
 const accountReducer = (state = initialStateAccount, action) => {
@@ -10,6 +11,12 @@ const accountReducer = (state = initialStateAccount, action) => {
       return {
         ...state,
         balance: state.balance + action.payload,
+      };
+
+    case "account/convertingCurrency":
+      return {
+        ...state,
+        isLoading: action.payload,
       };
     case "account/withdraw":
       return {
@@ -37,9 +44,43 @@ const accountReducer = (state = initialStateAccount, action) => {
 };
 
 // Action creators
-export const deposit = (amount) => {
-  return { type: "account/deposit", payload: amount };
+export const deposit = (amount, currency) => {
+  return async (dispatch) => {
+    dispatch(convertingCurrency(true));
+
+    if (amount <= 0) {
+      alert("Para yatırma işlemi negatif veya sıfır olamaz");
+      dispatch(convertingCurrency(false));
+      return;
+    }
+
+    if (currency === "TL") {
+      dispatch({ type: "account/deposit", payload: amount });
+      dispatch(convertingCurrency(false));
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.frankfurter.app/latest?amount=${amount}&from=${currency}&to=TRY`
+      );
+      const data = await response.json();
+      const rate = data.rates["TRY"];
+      const convertedAmount = rate;
+      dispatch({ type: "account/deposit", payload: convertedAmount });
+    } catch (error) {
+      console.error("Error fetching exchange rate:", error);
+      alert("Para yatırma işlemi başarısız oldu");
+    } finally {
+      dispatch(convertingCurrency(false));
+    }
+  };
 };
+
+export const convertingCurrency = (isLoading) => {
+  return { type: "account/convertingCurrency", payload: isLoading };
+};
+
 export const withdraw = (withdraw) => {
   return { type: "account/withdraw", payload: withdraw };
 };

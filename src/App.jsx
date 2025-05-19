@@ -1,4 +1,3 @@
-import React from 'react'
 import CreateCustomer from './features/customers/CreateCustomer'
 import Customer from './features/customers/Customer'
 import AccountOperations from './features/accounts/AccountOperations'
@@ -14,9 +13,11 @@ const App = () => {
         <h1 className="text-3xl font-bold mb-2 text-slate-800">Banka Hesabı</h1>
       </div>
       {fullName === "" ? <CreateCustomer /> : <>
-        <Customer />
+        <div className='flex justify-between items-center'>
+          <Customer />
+          <BalanceDisplay />
+        </div>
         <AccountOperations />
-        <BalanceDisplay />
       </>}
       {/* <CreateCustomer />
       <Customer />

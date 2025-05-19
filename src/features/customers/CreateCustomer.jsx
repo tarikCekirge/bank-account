@@ -35,12 +35,12 @@ const CreateCustomer = () => {
     };
 
     return (
-        <div>
-            <h2>Yeni Hesap</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="fullName">Ad Soyad</label>
-                    <input
+        <div className="bg-slate-200 pt-4 pb-10 px-4 rounded-xl">
+            <h2 className="text-2xl font-bold mb-2 text-slate-800">Yeni Hesap</h2 >
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-[200px_repeat(4,1fr)] gap-3 rounded-lg bg-slate-300 p-4">
+                    <label className="p-3 flex items-center font-bold text-slate-800" htmlFor="fullName">Ad Soyad</label>
+                    <input className="border p-3 border-slate-700 rounded-lg"
                         onChange={handleChange}
                         name="fullName"
                         id="fullName"
@@ -48,9 +48,9 @@ const CreateCustomer = () => {
                         value={newCustomer.fullName}
                     />
                 </div>
-                <div>
-                    <label htmlFor="nationalID">Kimlik No:</label>
-                    <input
+                <div className="grid grid-cols-[200px_repeat(4,1fr)] gap-3 rounded-lg bg-slate-300 p-4">
+                    <label className="p-3 flex items-center font-bold text-slate-800" htmlFor="nationalID">Kimlik No:</label>
+                    <input className="border p-3 border-slate-700 rounded-lg"
                         onChange={handleChange}
                         name="nationalID"
                         id="nationalID"
@@ -58,9 +58,11 @@ const CreateCustomer = () => {
                         value={newCustomer.nationalID}
                     />
                 </div>
-                <button disabled={disabled} type="submit">Gönder</button>
+                <div className="grid grid-cols-[200px_repeat(4,1fr)] gap-3 rounded-lg  p-4">
+                    <button disabled={disabled} type="submit" className="col-start-2 p-3 bg-slate-700  text-white font-bold rounded-lg cursor-pointer hover:bg-slate-600">Gönder</button>
+                </div>
             </form>
-        </div>
+        </div >
     );
 };
 

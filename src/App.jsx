@@ -9,17 +9,24 @@ const App = () => {
 
   const fullName = useSelector(state => state.customer.fullName)
   return (
-    <>
-      <h1>Bank Account</h1>
+    <section className='p-4 space-y-3'>
+      <div className='px-3'>
+        <h1 className="text-3xl font-bold mb-2 text-slate-800">Banka Hesabı</h1>
+      </div>
       {fullName === "" ? <CreateCustomer /> : <>
         <Customer />
         <AccountOperations />
         <BalanceDisplay />
       </>}
+      {/* <CreateCustomer />
+      <Customer />
+      <AccountOperations />
+      <BalanceDisplay /> */}
 
 
 
-    </>
+
+    </section>
   )
 }
 

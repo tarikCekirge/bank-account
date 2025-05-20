@@ -1,63 +1,14 @@
-const initialStateAccount = {
-  balance: 0,
-  loan: 0,
-  loanPurpose: "",
-  isLoading: false,
-};
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const accountReducer = (state = initialStateAccount, action) => {
-  switch (action.type) {
-    case "account/deposit":
-      return {
-        ...state,
-        balance: state.balance + action.payload,
-      };
-
-    case "account/convertingCurrency":
-      return {
-        ...state,
-        isLoading: action.payload,
-      };
-    case "account/withdraw":
-      return {
-        ...state,
-        balance: state.balance - action.payload,
-      };
-    case "account/requestLoan":
-      if (state.loan > 0) return state;
-      return {
-        ...state,
-        loan: action.payload.amount,
-        loanPurpose: action.payload.purpose,
-        balance: state.balance + action.payload.amount,
-      };
-    case "account/payLoan":
-      return {
-        ...state,
-        loan: 0,
-        loanPurpose: "",
-        balance: state.balance - state.loan,
-      };
-    default:
-      return state;
-  }
-};
-
-// Action creators
-export const deposit = (amount, currency) => {
-  return async (dispatch) => {
-    dispatch(convertingCurrency(true));
-
+export const deposit = createAsyncThunk(
+  "account/deposit",
+  async ({ amount, currency }, { rejectWithValue }) => {
     if (amount <= 0) {
-      alert("Para yatırma işlemi negatif veya sıfır olamaz");
-      dispatch(convertingCurrency(false));
-      return;
+      return rejectWithValue("Para yatırma işlemi negatif veya sıfır olamaz.");
     }
 
     if (currency === "TL") {
-      dispatch({ type: "account/deposit", payload: amount });
-      dispatch(convertingCurrency(false));
-      return;
+      return amount;
     }
 
     try {
@@ -65,33 +16,61 @@ export const deposit = (amount, currency) => {
         `https://api.frankfurter.app/latest?amount=${amount}&from=${currency}&to=TRY`
       );
       const data = await response.json();
-      const rate = data.rates["TRY"];
-      const convertedAmount = rate;
-      dispatch({ type: "account/deposit", payload: convertedAmount });
+      return data.rates["TRY"]; // Çevrilmiş TL miktarı
     } catch (error) {
-      console.error("Error fetching exchange rate:", error);
-      alert("Para yatırma işlemi başarısız oldu");
-    } finally {
-      dispatch(convertingCurrency(false));
+      console.error("Döviz çevirisi hatası:", error);
+      return rejectWithValue("Döviz çevirisi başarısız oldu.");
     }
-  };
+  }
+);
+
+// Başlangıç durumu
+const initialState = {
+  balance: 0,
+  loan: 0,
+  loanPurpose: "",
+  isLoading: false,
 };
 
-export const convertingCurrency = (isLoading) => {
-  return { type: "account/convertingCurrency", payload: isLoading };
-};
+const accountSlice = createSlice({
+  name: "account",
+  initialState,
+  reducers: {
+    withdraw: (state, action) => {
+      state.balance -= action.payload;
+    },
+    loan: {
+      reducer: (state, action) => {
+        state.loan = action.payload.amount;
+        state.loanPurpose = action.payload.purpose;
+      },
+      prepare: (amount, purpose) => ({
+        payload: { amount, purpose },
+      }),
+    },
+    payLoan: (state) => {
+      state.balance -= state.loan;
+      state.loan = 0;
+      state.loanPurpose = "";
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(deposit.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(deposit.fulfilled, (state, action) => {
+        state.balance += action.payload;
+        state.isLoading = false;
+      })
+      .addCase(deposit.rejected, (state, action) => {
+        state.isLoading = false;
+        alert(action.payload);
+      });
+  },
+});
 
-export const withdraw = (withdraw) => {
-  return { type: "account/withdraw", payload: withdraw };
-};
-export const requestLoan = (amount, purpose) => {
-  return {
-    type: "account/requestLoan",
-    payload: { amount: amount, purpose: purpose },
-  };
-};
-export const payLoan = () => {
-  return { type: "account/payLoan" };
-};
+export default accountSlice.reducer;
 
-export default accountReducer;
+// Actions
+export const { withdraw, loan, payLoan } = accountSlice.actions;
